@@ -1,0 +1,247 @@
+ 		WWW TRAINING :  post patching validation: Week3
+WWW servers have OMS patching on Saturday 2 & 3 week of the Month. If a specific server is in question, HPSM can be used to verify specific OMS patching schedule
+Heads up: 
+	You never go wrong by asking 
+	Validate the start time and servers being patched with Mr. king 
+	Do not do this before training. Shadow someone, with this doc and make sure it syncs
+
+Post patching validation 
+Step1 : Create IR (IR0005771446 )
+ 
+Step 2: Create Suppression
+	  
+Successfully created new suppression with Id : 744036
+
+Step3: Create CP for tonight activities{cover all servers being patched} example
+
+I.	IPS-MSP-WWW-KDC -003_Restart Webserver [servers: jwf0017k1a, jwf0017k2b, jwf0018k1a, jwf0018k2b]
+II.	IPS-MSP-WWW-KDC -002_Restart Weblogic [ servers: jab0046k1a, jab0046k2b, jab0047k1a, jab0047k2b]
+III.	IPS-MSP-WWW-PDC -006_Restart Weblogic [servers: jab0046p3c, jab0046p4d, jab0047p3c, jab0047p4d
+ 
+IV.	PDC [ servers: jwf0017p3c, jwf0017p4d, jwf0018p3c, jwf0018p4d]
+# sample cp { C03395818}
+# one CO can be created for all the work being done, but its always recommended to create separate CPs
+# send CP to Bob for approval
+
+Starting the actual work 
+I.	Enter the start time in your CP{ 
+ 
+II.	Take down the Web servers that are being patched first
+[ ssh kdcgate & ssh { jwf0017k1a, jwf0017k2b, jwf0018k1a, jwf0018k2b} & dzdo -u jmwww -i >  [jmwww@jab0046k1a ~]$ 
+[jmwww@jab0046k1a TOCDIGITAL]$ ll cd /prod/msp/domains/www_domains/TOCDIGITAL
+-rwxrwxr-x 1 jmwww gjmwww 581 Nov 20 06:47 start_weblogic.sh
+cd /prod/msp/domains/www_domains/TOCDIGITAL && ./ stop_apache.sh
+cd /prod/msp/domains/www_domains/TOCDIGITAL && ./ stop_apache.sh
+##########################################################################
+
+III.	Take down the Web servers that are being patched first {PDC > jwf0017p3c, jwf0017p4d, jwf0018p3c, jwf0018p4d } 
+cd /prod/msp/domains/www_domains/msp_www_pws_37/bin &&./ stopApache.sh
+# within each server, has multiple instances { msp_www_pws_37, msp_www_pws_45, msp_www_pws_53, msp_www_pws_61} ; therefore log into the path os each instance and stop apache as shown below ;
+cd /prod/msp/domains/www_domains/msp_www_pws_37/bin &&./ stopApache.sh
+cd /prod/msp/domains/www_domains/ msp_www_pws_45 /bin &&./ stopApache.sh
+cd /prod/msp/domains/www_domains/ msp_www_pws_53 /bin &&./ stopApache.sh
+cd /prod/msp/domains/www_domains/ msp_www_pws_61 /bin &&./ stopApache.sh
+# do this for all the servers { jwf0017p3c, jwf0017p4d, jwf0018p3c, jwf0018p4d}
+# validate apache is stopped { ps faux | grep pws_* } 
+> jmwww    11124  0.0  0.0 103320   832 pts/8    S+   21:35   0:00                              \_ grep pws_*
+
+
+
+IV.	Validate www traffic { http://mysplunk2/en-US/app/ms2_migration/toctoc?earliest=0&latest=}
+http://mysplunk2/en-US/app/TOC/digital_special_ops_traffic_by_dc_dashboard_bp?earliest=0&latest=
+
+
+     
+a.	Log into jab0044k1a as jmwww
+    cd /prod/msp/stage/www_stage/OMS_WKAREA_NEW/Deployment/AdminTool92/config/TOCDIGITAL && ./CHANNELA_disableBETA_enableACTIVE.sh
+ 
+
+ 
+
+V.	Start validating the traffic swing in splunk 
+   
+	 
+ 
+
+# once traffic swing is done > validate and start shutting down Weblogic console
+ 
+
+ 
+a.	Shutdown patching instances in weblogic console
+a.	Channel A weblogic servers http://10.37.99.204:11000/console
+b.	Channel B weblogic servers http://10.37.99.211:11000/console
+
+Log into the console from the above links 
+ 
+# click on servers 
+ 
+
+# ctrl + F Search <server> as shown below 
+
+ 
+
+Based on your result as shown above, { we are dealing with the last 16 of the servers}
+From {instance 16 to 31}  > click on control & select instances 16 – 31 
+  
+
+ 
+Do graceful shutdown 
+# Shutdown > force shutdown now 
+
+ 
+ 
+
+# validate disable channel state and splunk
+ 
+
+   
+
+# wait for the shutdown to be completed as shown below 
+ 
+
+VI.	REPEATE THE SAME PROCEDURE FOR jab0044p3c as jmwww
+cd /prod/msp/stage/www_stage/OMS_WKAREA_NEW/Deployment/AdminTool92/config/TOCDIGITAL &&./ CHANNELA_disableBETA_enableACTIVE.sh
+
+ 
+
+a.	Channel A weblogic servers http://10.14.243.161:11000/console
+b.	Channel B weblogic servers http://10.14.243.167:11000/console
+Log console like we did before> server & CTRL + F search <server> jab0046p3c > based on the location as depicted below> they belong to the last 16 of 31 instances
+
+ 
+
+# select control & select 16-31 instances & restart them as shown previously 
+ 
+Shut them down !
+Validate they are down & validate the traffic
+
+ 
+
+Overall successful traffic should look like the one displayed below> else reach out to Bob for verification and help
+ 
+ 
+
+# Yes You just successfully completed WWWOMS Pre-patching steps
+# yesssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+# leave the server alone and watch the OMS DASH-BOARD for Patching completion
+https://patchingdashboard.kdc.capitalone.com/digital/3rdsunday/
+ 
+# validate the uptime before you do anything else and proceed to the next phase!
+THIS IS THE MOST CRUTIAL PHASE OF WWW PROCESS! <PAY CLOSE ATTENTIAON>
+STEP1: VALIDATE THAT EVERYTHING IS GREEN IN THE BORD (PATCHING BOARD)
+STEP2: VALIDATE UPTIME IF IN DOUBT(ssh <server> run uptime 
+[jmwww@jwf0017p3c bin]$ uptime 
+22:06:41 up 22:49,  7 users,  load average: 0.10, 0.04, 0.08
+STEP3: VALIDATE SERVER ADMINS (ALL) ARE RUNNING
+	MUST BE DONE NEFORE ANYTHING ELSE IN THE MACHINE
+KDC Domain { All these links must open up before you can proceed period}
+ JAB0044K1A    http://10.37.99.204:11000/console
+                                KDC Domain 2 JAB0047K2B    http://10.37.99.211:11000/console
+                                VDC Domain 1 JAB0044P3C    http://10.14.243.161:11000/console
+                                VDC Domain 2 JAB0047P3C    http://10.14.243.167:11000/console
+	Example shown below
+JAB0044K1A    http://10.37.99.204:11000/console
+
+	 
+	# VALIDATE SERVER ADMIN IS RUNNING ( RUUNING STATE) 
+	 
+	REDFLAG
+		Admin is in UNKNOWN STATE/DOWN 
+ 
+RESOLUTION: 
+STEP1: FROM WWW RUNBOOK >  Validate admin server
+
+ 
+	ssh jab0044k1a { dzdo -u jmwww -i} > [jmwww@jab0044k1a ~]$
+	Important { server has 2 admin scripts in [pps01 & pps02] > use 01 for admin restart { ./startAdmin.sh }
+	cd /prod/msp/domains/www_domains/pps01/msp_www_pps/bin && ./startAdmin.sh { start the admin server}
+	Allocate 5-10 minutes and retry reloading console {http://10.37.99.204:11000/console}
+	ONLY RUN ADMIN RESTART from ONCE pps01 
+	#NB > second startAdmin.sh script pps02 is redundant and was supposed to be cleaned out after the server build ( ASK  Bob if you have to use it) # it causes latency  as far as I know. 
+
+FOR jab0047k2b : same > cd /prod/msp/domains/www_domains/pps01/msp_www_pps/bin &&./ startAdmin.sh
+	jab0044p3c [ has { pps03 & pps04} use pps03 (primary)]
+cd /prod/msp/domains/www_domains/pps03/msp_www_pps/bin &&./ startAdmin.sh
+	seek Bob for more info.
+# ALL INSTANCES SHOULD BE RUUNING AT THIS POINT 
+STEP 2:  start weblogic instances in PPS01 & PPS02 on all patched servers 
+{ jab0046k1a, jab0046k2b, jab0047k1a, jab0047k2b  
+&& jab0046p3c, jab0046p4d, jab0047p3c, jab0047p4d} 
+Example! 
+ssh { jab0046k1a, jab0046k2b, jab0047k1a, jab0047k2b } 
+cd /prod/msp/domains/www_domains/pps01/msp_www_pps/bin/ && ./mtFastStart.sh
+
+down the road >> lets head this way
+ simple bash >  {ADMIN =host}
+
+server_list=” jab0046k1a jab0046k2b jab0047k1a jab0047k2b” 
+path=”/prod/msp/domains/www_domains/pps02/msp_www_pps/bin”
+for i in server_list, do
+		cd $path, echo $#,
+			if [ $(echo $#) == '0' ]; then echo "right path"; 
+				./ mtFastStart.sh;
+else echo "Wrong dir_pth …quiting"; fi
+# This is to show that all his work should be scripted 
+cd /prod/msp/domains/www_domains/pps02/msp_www_pps/bin/ && ./mtFastStart.sh
+
+# FROM THE ADMIN SERVER ( WE can generate and modify this shell script> to be pushed to all servers_list and run at the same time) 
+##############################################################
+
+WWW -PDC -servers > 
+Serverlist2=” jab0046p3c, jab0046p4d, jab0047p3c, jab0047p4d”
+cd /prod/msp/domains/www_domains/pps03/msp_www_pps/bin && ./mtFastStart.sh
+############################################################# 
+Step 3: verify that all instances are running fine (console> 16 -31)
+ 
+Step4 : Failed instance( unknown state/failed/Shutdown)
+Resolution: 
+Validate the uknown instance  example { msp_www_pps_m16} 
+	ps -ef | grep msp_www_pps_m16
+jmwww    21503     1  0 01:47 ?        00:00:00 /bin/sh ./deleteLogs.sh msp_www_pps_m16
+kill-9 21503 > {MUST BE ./deleteLogs.sh}
+Restart it back :
+cd /prod/msp/domains/www_domains/pps02/msp_www_pps/bin/ && ./startmsp_www_pps_m16.sh
+Step5: Refresh cache - (login- cachemonitor | password- abcd1234)
+   		 http://jab0047p3c:11400/www-cache-monitor/index.jsp
+                                http://jab0044p3c:11200/www-cache-monitor/index.jsp
+                                http://jab0044k1a:11200/www-cache-monitor/index.jsp
+                                http://jab0047k2b:11400/www-cache-monitor/index.jsp
+	# VERY IMPORTANT: 
+ 
+1.	refresh ALL Nodes
+2.	<select server> &Reload All   
+3.	Complete these for all servers being patched 
+	Wait for everything to be Green:
+
+ 
+Step5:  Switch the Traffic 
+	ssh { KDC (JAB0044K1A) & VDC(JAB0044P3C)}
+cd /prod/msp/stage/www_stage/OMS_WKAREA_NEW/Deployment/AdminTool92/config/TOCDIGITAL/ && ./ CHANNELA_disableACTIVE_enableBETA.sh
+##########################################################
+	Perform traffic switch in KDC (JAB0044K1A) & VDC(JAB0044P3C)
+      /prod/msp/stage/www_stage/OMS_WKAREA_NEW/Deployment/AdminTool92/config/TOCDIGITAL/
+                                                CHANNELA_disableACTIVE_enableBETA.sh
+                                                CHANNELA_disableBETA_enableACTIVE.sh
+                                                CHANNELB_disableACTIVE_enableBETA.sh
+                                                CHANNELB_disableBETA_enableACTIVE.sh
+
+# LAST STEPS:
+	close the CO# 
+	CLOSE THE IR
+	CLOSE THE SUPRESSION 
+TRIBUTE TO ALL MY MATES
+SHOTOUT TO LIZ FOR BEING ONTOP OF WWW PROJECT
+	SAME TO GAV for being a great mate and wonderful coworker
+	Shout-out to Boedecker for all the trainings
+	Shout-out to {Graham, Brian} I am shot of breath to say I am leaving
+	All the best to everyone else!
+# AUTHOR : Elizabeth
+# Modified: Fredrick Were
+# 423-579-0481
+# fredrickwere@gmail.com
+############################
+
+
+
+
+	
